@@ -2,13 +2,11 @@
 ARG PHP_VERSION=8.2
 ARG ROADRUNNER_VERSION=2023.3.3
 FROM ghcr.io/roadrunner-server/roadrunner:${ROADRUNNER_VERSION} as rr
-FROM php:${PHP_VERSION}-cli AS php-base
+FROM php:${PHP_VERSION}-cli-alpine AS php-base
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Set the SHELL option -o pipefail before RUN with a pipe in it
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
+# Validate PHP_VERSION argument
 RUN if [ -z "$PHP_VERSION" ]; then echo "The PHP_VERSION argument is not set."; exit 1; fi \
  && if [ "$(printf '%s\n' "8.2" "$PHP_VERSION" | sort -V | head -n1)" != "8.2" ]; then \
         echo "PHP version must be at least 8.2"; \
@@ -18,46 +16,43 @@ RUN if [ -z "$PHP_VERSION" ]; then echo "The PHP_VERSION argument is not set."; 
 VOLUME /app
 WORKDIR /app
 
-# hadolint ignore=DL3008
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# hadolint ignore=DL3018
+RUN apk update && apk add --no-cache linux-headers \
     acl \
     file \
     gettext \
-    gnupg \
     g++ \
     procps \
     openssl \
     git \
     unzip \
-    zlib1g-dev \
     libzip-dev \
-    libfreetype6-dev \
-    make \
+    freetype-dev \
     libpng-dev \
-    libjpeg-dev \
-    libicu-dev  \
-    libonig-dev \
-    libxslt1-dev \
-    libpq-dev \
- && rm -rf /var/lib/apt/lists/* # Added cleanup
+    libjpeg-turbo-dev \
+    icu-dev \
+    oniguruma-dev \
+    libxslt-dev \
+    postgresql-dev
 
-RUN echo 'alias sf="php bin/console"' >> ~/.bashrc
+RUN echo 'alias micro="php bin/console"' >> ~/.ashrc
 
 # Combining RUN commands to consolidate layers
-RUN docker-php-ext-configure gd --with-jpeg --with-freetype \
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
  && docker-php-ext-install -j"$(nproc)" \
     intl zip xsl opcache pdo_mysql gd exif mbstring sockets
 
 COPY docker/php/docker-entrypoint.sh /etc/entrypoint.sh
 RUN chmod +x /etc/entrypoint.sh
 
-###> recipes ###
-###< recipes ###
-
+# Composer and RoadRunner binaries
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 COPY --from=rr /usr/bin/rr /usr/local/bin/rr
+
+# Configuration files
 COPY docker/php/app.ini /usr/local/etc/php/conf.d/
 
+# Production stage
 FROM php-base as php-prod
 ENV ENV=prod
 ENV COMPOSER_NO_DEV=1
@@ -66,9 +61,11 @@ COPY docker/php/prod/app.prod.ini /usr/local/etc/php/conf.d/
 COPY . .
 ENTRYPOINT ["/etc/entrypoint.sh"]
 
+# Development stage
 FROM php-base as php-dev
 ENV ENV=dev
-RUN pecl install xdebug && docker-php-ext-enable xdebug
+RUN apk add --no-cache $PHPIZE_DEPS \
+ && pecl install xdebug \
+ && docker-php-ext-enable xdebug
 COPY --link docker/php/dev/app.dev.ini /usr/local/etc/php/conf.d/
-
 ENTRYPOINT ["/etc/entrypoint.sh"]
