@@ -42,14 +42,6 @@ jobs:
         name: Check HTTP reachability
         run: curl -v -o /dev/null http://localhost
       -
-        name: Create test database
-        if: false # Remove this line if Doctrine ORM is installed
-        run: docker compose exec -T php bin/console -e test doctrine:database:create
-      -
-        name: Run migrations
-        if: false # Remove this line if Doctrine Migrations is installed
-        run: docker compose exec -T php bin/console -e test doctrine:migrations:migrate --no-interaction
-      -
         name: Run PHPUnit
         if: false # Remove this line if PHPUnit is installed
         run: docker compose exec -T php bin/phpunit
