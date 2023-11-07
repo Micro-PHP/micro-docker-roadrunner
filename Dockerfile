@@ -15,8 +15,11 @@ RUN if [ -z "$PHP_VERSION" ]; then echo "The PHP_VERSION argument is not set."; 
 VOLUME /app
 WORKDIR /app
 
+# Set the SHELL option -o pipefail before RUN with a pipe in it
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # persistent / runtime deps
-RUN apt update && apt install -y \
+RUN apt-get update && apt-get install -y \
     acl \
     file \
     gettext \
@@ -36,14 +39,15 @@ RUN apt update && apt install -y \
     libonig-dev \
     libxslt1-dev \
     libpq-dev \
-    libssh2-1-dev
+ && rm -rf /var/lib/apt/lists/* # Added cleanup
 
 RUN echo 'alias sf="php bin/console"' >> ~/.bashrc
-RUN docker-php-ext-configure gd --with-jpeg --with-freetype
-RUN docker-php-ext-install -j$(nproc) \
+
+# Combining RUN commands to consolidate layers
+RUN docker-php-ext-configure gd --with-jpeg --with-freetype \
+ && docker-php-ext-install -j"$(nproc)" \
     intl zip xsl opcache pdo_mysql gd exif mbstring sockets
-RUN pecl install ssh2
-RUN docker-php-ext-enable ssh2
+
 COPY docker/php/docker-entrypoint.sh /etc/entrypoint.sh
 RUN chmod +x /etc/entrypoint.sh
 
