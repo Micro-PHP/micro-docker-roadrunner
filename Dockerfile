@@ -6,6 +6,8 @@ FROM php:${PHP_VERSION}-cli-alpine AS php-base
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
+
 # Validate PHP_VERSION argument
 RUN if [ -z "$PHP_VERSION" ]; then echo "The PHP_VERSION argument is not set."; exit 1; fi \
  && if [ "$(printf '%s\n' "8.2" "$PHP_VERSION" | sort -V | head -n1)" != "8.2" ]; then \
@@ -37,7 +39,6 @@ RUN apk update && apk add --no-cache linux-headers \
 
 RUN echo 'alias micro="php bin/console"' >> ~/.ashrc
 
-# Combining RUN commands to consolidate layers
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
  && docker-php-ext-install -j"$(nproc)" \
     intl zip xsl opcache pdo_mysql gd exif mbstring sockets
@@ -64,6 +65,8 @@ ENTRYPOINT ["/etc/entrypoint.sh"]
 # Development stage
 FROM php-base as php-dev
 ENV ENV=dev
+
+# hadolint ignore=DL3018,SC2086
 RUN apk add --no-cache $PHPIZE_DEPS \
  && pecl install xdebug \
  && docker-php-ext-enable xdebug
