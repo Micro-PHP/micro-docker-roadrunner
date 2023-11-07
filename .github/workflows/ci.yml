@@ -43,7 +43,7 @@ jobs:
         run: |
           retries=5
           while [ $retries -gt 0 ]; do
-            if curl --output /dev/null --silent --head --fail http://localhost:80; then
+            if curl --output /dev/null --silent --get --fail http://localhost:80; then
               echo "Service is up!"
               break
             else
