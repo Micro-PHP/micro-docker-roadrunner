@@ -66,8 +66,7 @@ ENTRYPOINT ["/etc/entrypoint.sh"]
 FROM php-base as php-dev
 ENV ENV=dev
 
-# hadolint ignore=DL3018
-# hadolint ignore=SC2086
+# hadolint ignore=DL3018,SC2086
 RUN apk add --no-cache $PHPIZE_DEPS \
  && pecl install xdebug \
  && docker-php-ext-enable xdebug
