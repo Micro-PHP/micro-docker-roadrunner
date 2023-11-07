@@ -67,7 +67,8 @@ FROM php-base as php-dev
 ENV ENV=dev
 
 # hadolint ignore=DL3018
-RUN apk add --no-cache "$PHPIZE_DEPS" \
+# hadolint ignore=SC2086
+RUN apk add --no-cache $PHPIZE_DEPS \
  && pecl install xdebug \
  && docker-php-ext-enable xdebug
 COPY --link docker/php/dev/app.dev.ini /usr/local/etc/php/conf.d/
