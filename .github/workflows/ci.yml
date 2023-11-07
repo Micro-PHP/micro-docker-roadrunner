@@ -64,10 +64,7 @@ jobs:
       -
         name: Check HTTP reachability
         run: curl -v -o /dev/null http://localhost
-      -
-        name: Run PHPUnit
-        if: false # Remove this line if PHPUnit is installed
-        run: docker compose exec -T php bin/phpunit
+
   lint:
     name: Docker Lint
     runs-on: ubuntu-latest
