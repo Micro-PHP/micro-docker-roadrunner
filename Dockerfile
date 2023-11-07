@@ -6,6 +6,8 @@ FROM php:${PHP_VERSION}-cli-alpine AS php-base
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
+
 # Validate PHP_VERSION argument
 RUN if [ -z "$PHP_VERSION" ]; then echo "The PHP_VERSION argument is not set."; exit 1; fi \
  && if [ "$(printf '%s\n' "8.2" "$PHP_VERSION" | sort -V | head -n1)" != "8.2" ]; then \
@@ -15,8 +17,6 @@ RUN if [ -z "$PHP_VERSION" ]; then echo "The PHP_VERSION argument is not set."; 
 
 VOLUME /app
 WORKDIR /app
-
-SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
 # hadolint ignore=DL3018
 RUN apk update && apk add --no-cache linux-headers \
@@ -65,6 +65,8 @@ ENTRYPOINT ["/etc/entrypoint.sh"]
 # Development stage
 FROM php-base as php-dev
 ENV ENV=dev
+
+# hadolint ignore=DL3018
 RUN apk add --no-cache $PHPIZE_DEPS \
  && pecl install xdebug \
  && docker-php-ext-enable xdebug
