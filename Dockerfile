@@ -16,6 +16,8 @@ RUN if [ -z "$PHP_VERSION" ]; then echo "The PHP_VERSION argument is not set."; 
 VOLUME /app
 WORKDIR /app
 
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
+
 # hadolint ignore=DL3018
 RUN apk update && apk add --no-cache linux-headers \
     acl \
@@ -37,7 +39,6 @@ RUN apk update && apk add --no-cache linux-headers \
 
 RUN echo 'alias micro="php bin/console"' >> ~/.ashrc
 
-# Combining RUN commands to consolidate layers
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
  && docker-php-ext-install -j"$(nproc)" \
     intl zip xsl opcache pdo_mysql gd exif mbstring sockets
