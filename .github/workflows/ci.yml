@@ -38,6 +38,25 @@ jobs:
       -
         name: Start services
         run: docker compose up --wait --no-build
+
+      - name: Wait for service
+        run: |
+          retries=5
+          while [ $retries -gt 0 ]; do
+            curl --output /dev/null --silent --head --fail http://localhost:80
+            retVal=$?
+            if [ $retVal -eq 0 ]; then
+              echo "Service is up!"
+              break
+            fi
+            echo "Waiting for the service to be up, attempt $((6 - retries))..."
+            retries=$((retries - 1))
+            sleep 15
+          done
+          if [ $retries -eq 0 ]; then
+            echo "Service did not become ready in time"
+            exit 1
+          fi
       -
         name: Run tests
         run: docker compose exec -T php composer run-script test-all
