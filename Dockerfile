@@ -6,6 +6,9 @@ FROM php:${PHP_VERSION}-cli AS php-base
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
+# Set the SHELL option -o pipefail before RUN with a pipe in it
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 RUN if [ -z "$PHP_VERSION" ]; then echo "The PHP_VERSION argument is not set."; exit 1; fi \
  && if [ "$(printf '%s\n' "8.2" "$PHP_VERSION" | sort -V | head -n1)" != "8.2" ]; then \
         echo "PHP version must be at least 8.2"; \
@@ -15,11 +18,8 @@ RUN if [ -z "$PHP_VERSION" ]; then echo "The PHP_VERSION argument is not set."; 
 VOLUME /app
 WORKDIR /app
 
-# Set the SHELL option -o pipefail before RUN with a pipe in it
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
 # persistent / runtime deps
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     acl \
     file \
     gettext \
