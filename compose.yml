@@ -1,0 +1,23 @@
+version: "3.5"
+
+services:
+  php:
+    image: php-${IMAGES_PREFIX:-prod}
+    restart: unless-stopped
+    environment:
+      SERVER_NAME: ${SERVER_NAME:-localhost}, php:80
+      STABILITY: ${STABILITY:-stable}
+      MICRO_VERSION: ${MICRO_VERSION:-}
+    volumes:
+      - php_data:/app
+    ports:
+      - target: 80
+        published: ${HTTP_PORT:-80}
+        protocol: tcp
+        
+    #            - "9003:9003"
+#    environment:
+#      PHP_IDE_CONFIG: "serverName=docker"
+
+volumes:
+  php_data:

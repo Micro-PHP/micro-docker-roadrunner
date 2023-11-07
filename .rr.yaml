@@ -1,0 +1,32 @@
+version: '3'
+
+server:
+  command: php public/index.php
+  env:
+    - APP_ENV: prod
+
+http:
+  address: 0.0.0.0:80
+  middleware: [ "static", "gzip" ]
+  pool:
+    debug: false
+  uploads:
+    forbid: [ ".php", ".exe", ".bat" ]
+  static:
+    dir: "public"
+    forbid: [ ".php", ".htaccess" ]
+
+logs:
+  mode: production
+  channels:
+    http:
+      level: error
+    server:
+      level: error
+      mode: raw
+    metrics:
+      level: error
+
+# Uncomment to use metrics integration
+# rpc:
+#   listen: tcp://127.0.0.1:6001
