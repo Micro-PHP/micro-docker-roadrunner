@@ -1,5 +1,3 @@
-version: "3.5"
-
 services:
   php:
     image: php-${IMAGES_PREFIX:-prod}
