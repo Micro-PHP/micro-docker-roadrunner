@@ -1,6 +1,6 @@
 # Common base stage
-ARG PHP_VERSION=8.2
-ARG ROADRUNNER_VERSION=2023.3.3
+ARG PHP_VERSION=8.4
+ARG ROADRUNNER_VERSION=2025.1.2
 FROM ghcr.io/roadrunner-server/roadrunner:${ROADRUNNER_VERSION} as rr
 FROM php:${PHP_VERSION}-cli-alpine AS php-base
 
